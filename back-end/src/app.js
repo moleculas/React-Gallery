@@ -21,6 +21,15 @@ app.use(express.urlencoded({ extended: true }));
 //routes
 app.use('/api', require('./routes/index.routes'));
 app.use('/api/images', require('./routes/images.routes'));
-app.use('/api/usuarios', require('./routes/usuarios.routes'));
+app.use('/api/usuarios', require('./routes/auth.routes'));
+//app.use('/api/usuarios', require('./routes/usuarios.routes'));
+
+app.use(function(req, res, next) {
+  res.header(
+    "Access-Control-Allow-Headers",
+    "x-access-token, Origin, Content-Type, Accept"
+  );
+  next();
+});
 
 module.exports = app;

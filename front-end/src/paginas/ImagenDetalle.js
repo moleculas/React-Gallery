@@ -22,8 +22,8 @@ const ImagenDetalle = () => {
 
   const handleDelete = async () => {
     if (window.confirm("¿Estás segur@ que quieres borrar la imagen?")) {
-      const res = await axios.delete(`${apiUrl}/api/images/${params.id}`);
-      console.log(res)
+       await axios.delete(`${apiUrl}/api/images/${params.id}`);
+      window.location.href = '/';
     }
   }
 

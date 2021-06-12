@@ -48,21 +48,24 @@ const ImageForm = () => {
                 let percent = parseInt((loaded * 100) / total);
                 setUploadPercentage(percent);
             },
-        });
-
-        setLoading(false);
-        setUploadPercentage(0);
-        setEtiquetas([]);       
-        setFile(null);
-        e.target.reset()
-        window.location.href = '/upload';
+        }).then(response =>{
+            console.log(response.data);          
+            setLoading(false);
+            setUploadPercentage(0);
+            setEtiquetas([]);       
+            setFile(null);
+            e.target.reset()
+           window.location.href = '/upload';
+           
+          }).catch(err =>{
+            console.log(err.response.data);
+          });        
     };
 
     const resetImage = () => {
         setFile(null)
         setPreFile(null)
         document.getElementById("uploadCaptureInputFile").value = "";
-
     }
 
     return (

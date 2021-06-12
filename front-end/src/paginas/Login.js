@@ -1,24 +1,51 @@
-import React, { useState } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import axios from "axios"
 import { apiUrl } from "../constantes"
+import { withRouter } from "react-router-dom";
 
-const Login = () => {
+const Login = (props) => {
 
     const [email, setEmail] = useState('')
     const [nombre, setNombre] = useState('')
-    const [esRegistro, setEsRegistro] = useState(true)
+    const [esRegistro, setEsRegistro] = useState(false)
     const [password, setPassword] = useState('')
     const [error, setError] = useState(null)
+    const [exito, setExito] = useState(null)
+    const [contenidoAlerts, setContenidoAlerts] = useState(null)
 
-    const procesarDatos = async (e) => {
+    useEffect(() => {
+        if (error) {
+            const contenidoEr = `<div class="alert mt-3 alert-danger">${error}</div>`
+            setContenidoAlerts(contenidoEr)
+            setError(null)
+        }
+        if (exito) {
+            const contenidoEx = `<div class="alert mt-3 alert-info">${exito}</div>`
+            setContenidoAlerts(contenidoEx)
+            setExito(null)
+        }
+    }, [exito, error]);
+
+    const handleEsRegistro = () => {
+        setEsRegistro(!esRegistro)
+        setContenidoAlerts(null)
+        setEmail('');
+        setNombre('');
+        setPassword('')
+    }
+
+    const procesarDatos = (e) => {
         e.preventDefault()
+
         if (!nombre.trim()) {
             setError('Datos vacíos nombre!')
             return
         }
-        if (!email.trim()) {
-            setError('Datos vacíos email!')
-            return
+        if (esRegistro) {
+            if (!email.trim()) {
+                setError('Datos vacíos email!')
+                return
+            }
         }
         if (!password.trim()) {
             setError('Datos vacíos pass!')
@@ -29,22 +56,56 @@ const Login = () => {
             return
         }
         setError(null)
+        if (esRegistro) {
+            registrar(e)
+        } else {
+            logear()
+        }
+
+    }
+
+    const logear = useCallback(async () => {
+        const formData = new FormData();
+        formData.append("nombre", nombre);
+        formData.append("password", password);
+        await axios.post(apiUrl + "/api/usuarios/auth/signin", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            }
+        }).then(response => {
+           console.log(response.data.accessToken)
+            props.history.push('/')
+            return
+
+        }).catch(err => {
+            setError(err.response.data.message)
+            return
+        })
+    }, [password, nombre, props.history])
+
+    const registrar = useCallback(async (e) => {
         const formData = new FormData();
         formData.append("nombre", nombre);
         formData.append("email", email);
         formData.append("password", password);
-        await axios.post(apiUrl + "/api/usuarios/registrar", formData, {
+        await axios.post(apiUrl + "/api/usuarios/auth/signup", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             }
-        })
-        setEmail('');
-        setNombre('');
-        setPassword('');
-        e.target.reset()
-        window.location.href = '/login';
+        }).then(response => {
+            setEmail('');
+            setNombre('');
+            setPassword('')
+            e.target.reset()
+            setExito('Usuario registrado')
+            setEsRegistro(!esRegistro)
+            return
 
-    }
+        }).catch(err => {
+            setError(err.response.data.message)
+            return
+        })
+    }, [esRegistro, email, password, nombre])
 
     return (
         <div className="col-md-6 offset-md-3 mt-5">
@@ -57,13 +118,7 @@ const Login = () => {
                         }
                     </h1>
                     <form onSubmit={procesarDatos}>
-                        {
-                            error ? (
-                                <div className="alert alert-danger">
-                                    {error}
-                                </div>
-                            ) : null
-                        }
+                        <div dangerouslySetInnerHTML={{ __html: contenidoAlerts }} />
 
                         <div className="row mt-3">
                             <div className="col-12 mb-2">
@@ -75,15 +130,18 @@ const Login = () => {
                                     value={nombre}
                                 />
                             </div>
-                            <div className="col-12 mb-2">
-                                <input
-                                    type="email"
-                                    className="form-control bg-dark text-light  border border-secondary"
-                                    placeholder="Ingresa Email"
-                                    onChange={e => setEmail(e.target.value)}
-                                    value={email}
-                                />
-                            </div>
+                            {esRegistro ? (
+                                <div className="col-12 mb-2">
+                                    <input
+                                        type="email"
+                                        className="form-control bg-dark text-light  border border-secondary"
+                                        placeholder="Ingresa Email"
+                                        onChange={e => setEmail(e.target.value)}
+                                        value={email}
+                                    />
+                                </div>
+                            ) : null}
+
                             <div className="col-12 mb-2">
                                 <input
                                     type="password"
@@ -105,9 +163,9 @@ const Login = () => {
                             <button
                                 className="nav-link active d-flex align-items-center btn-info btn col-6"
                                 type="button"
-                                onClick={() => setEsRegistro(!esRegistro)}
+                                onClick={handleEsRegistro}
                             >
-                                {esRegistro ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}
+                                {esRegistro ? 'Login usuario' : 'Registro usuario'}
                             </button>
                         </div>
                     </form>
@@ -117,4 +175,4 @@ const Login = () => {
     )
 }
 
-export default Login
+export default withRouter(Login)

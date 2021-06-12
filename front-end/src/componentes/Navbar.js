@@ -49,7 +49,7 @@ const Navbar = () => {
                 to="/login"
               >
                 <span className="material-icons me-2">login</span>
-                Login
+                Acceso
               </Link>
             </li>
             <li className="nav-item me-2">
