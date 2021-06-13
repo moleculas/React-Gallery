@@ -75,7 +75,7 @@ const ImagenDetalle = (props) => {
   }
 
   return (
-    <div className="row">
+    <div className="row">     
       <div className="col-md-10 offset-md-1">
         <div className="d-flex align-items-center">
           <button type="button" onClick={() => handleNavegacion('atras')} className={`btn btn-dark me-4 btn-sm ${foundId <= 0 ? `disabled` : `enabled`}`}><span className="material-icons">arrow_back</span></button>
@@ -109,7 +109,7 @@ const ImagenDetalle = (props) => {
           <button type="button" onClick={() => handleNavegacion('adelante')} className={`btn btn-dark ms-4 btn-sm ${foundId > imagenesInicio.length-2 ? `disabled` : `enabled`}`}><span className="material-icons">arrow_forward</span></button>
         </div>
       </div>
-    </div>
+    </div>   
   );
 };
 
