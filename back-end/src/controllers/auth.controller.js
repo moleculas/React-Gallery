@@ -24,8 +24,7 @@ exports.signup =async (req, res) => {
 exports.signin = async (req, res) => {
     await Usuario.findOne({
         nombre: req.body.nombre
-    })
-        // .populate("roles", "-__v")
+    })        
         .exec((err, usuario) => {
             if (err) {
                 res.status(500).send({ message: err });
@@ -36,7 +35,7 @@ exports.signin = async (req, res) => {
                 return res.status(404).send({ message: "Usuario no encontrado." });
             }
 
-            var passwordIsValid = bcrypt.compareSync(
+           let passwordIsValid = bcrypt.compareSync(
                 req.body.password,
                 usuario.password
             );
@@ -48,8 +47,8 @@ exports.signin = async (req, res) => {
                 });
             }
 
-            var token = jwt.sign({ id: usuario.id }, config.secret, {
-                expiresIn: 86400 // 24 hours
+            let token = jwt.sign({ id: usuario.id }, config.secret, {
+                expiresIn: 86400 // 24 horas
             });
 
             res.status(200).send({

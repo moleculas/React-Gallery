@@ -39,3 +39,8 @@
   .cursor-pointer{
     cursor: pointer !important
 }
+
+.fondo-spinner{
+    border-radius: 30px;
+    background-color: #0000005e;
+}

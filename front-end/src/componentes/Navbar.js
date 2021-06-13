@@ -1,8 +1,23 @@
-import React from "react";
-import logo from "../logo.png";
-import { Link } from "react-router-dom";
+import React, { useContext } from "react"
+import logo from "../logo.png"
+import { Link } from "react-router-dom"
+import { withRouter } from "react-router-dom"
+import ContextoUsuario from '../ContextoUsuario'
 
-const Navbar = () => {
+const Navbar = (props) => {
+
+  const {usuarioLog, setUsuarioLog} = useContext(ContextoUsuario)
+
+  const cerrarSesion = () => {
+    localStorage.clear()
+    setUsuarioLog(prevState => ({
+      ...prevState,
+      nombre: null,
+      logged: false
+  }))
+    props.history.push('/login')
+  }
+
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container">
@@ -18,54 +33,57 @@ const Navbar = () => {
           aria-expanded="false"
           aria-label="Toggle navigation"
         >
-
         </button>
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav d-flex ms-auto">
-            <li className="nav-item me-2">
+        <div className="d-flex justify-content-between" id="navbarNav">    
+           {
+              usuarioLog.nombre ? (<div className="me-4 mt-2"><h5>Hola, {usuarioLog.nombre}</h5></div>): null
+            }   
+            <div className="btn-group" role="group" aria-label="botonera"> 
+            {usuarioLog.logged ? (
               <Link
-                className="nav-link active d-flex align-items-center btn-primary btn"
+                className="d-flex align-items-center btn-outline-light btn"
                 aria-current="page"
                 to="/"
               >
                 <span className="material-icons me-2">home</span>
                 Inicio
               </Link>
-            </li>
-            <li className="nav-item me-2">
+           ) : null}
+            {usuarioLog.logged ? (
               <Link
-                className="nav-link active d-flex align-items-center btn-primary btn"
+                className="d-flex align-items-center btn-outline-light btn"
                 aria-current="page"
                 to="/upload"
               >
                 <span className="material-icons me-2">file_upload</span>
                 Subir imagen
               </Link>
-            </li>
-            <li className="nav-item me-2">
+            ) : null}           
+            {usuarioLog.logged ? (
+              <button
+                className="d-flex align-items-center btn-outline-danger btn"
+                onClick={cerrarSesion}
+              >
+                <span className="material-icons me-2">logout</span>
+                            Cerrar Sesión
+                </button>
+           ) : null}
+            </div>  
+             {!usuarioLog.logged ? (
               <Link
-                className="nav-link active d-flex align-items-center btn-primary btn"
+                className="d-flex align-items-center btn-outline-light btn"
                 aria-current="page"
                 to="/login"
               >
                 <span className="material-icons me-2">login</span>
                 Acceso
               </Link>
-            </li>
-            <li className="nav-item me-2">
-              <button
-                className="nav-link active d-flex align-items-center btn-danger btn"
-              // onClick={() => cerrarSesion()}
-              >
-                <span className="material-icons me-2">logout</span>
-                            Cerrar Sesión
-                </button>
-            </li>
-          </ul>
+            ) : null}
+          
         </div>
       </div>
     </nav>
   );
 };
 
-export default Navbar;
+export default withRouter(Navbar)

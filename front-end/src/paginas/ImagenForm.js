@@ -1,66 +1,104 @@
-import React, { useState } from "react"
+import React, { useState, useEffect, useContext, useRef } from "react"
 import axios from "axios"
 import options from '../opciones-select'
 import CreatableSelect from 'react-select/creatable'
 import { OverlayTrigger, Tooltip } from 'react-bootstrap'
 import { apiUrl } from "../constantes"
+import { withRouter } from "react-router-dom"
+import ContextoUsuario from '../ContextoUsuario'
 
+const ImageForm = (props) => {
 
-const ImageForm = () => {
+    const { usuarioLog } = useContext(ContextoUsuario)
 
-    const [file, setFile] = useState(null)    
+    useEffect(() => {
+        if (!usuarioLog.logged) {
+            props.history.push('/login')
+        }
+    }, [usuarioLog, props.history])
+
+    const [file, setFile] = useState(null)
     const [etiquetas, setEtiquetas] = useState([])
     const [uploadPercentage, setUploadPercentage] = useState(0)
     const [loading, setLoading] = useState(false)
     const [preFile, setPreFile] = useState(null)
-    
+    const [botonActivado, setBotonActivado] = useState(false)
+
+    const refImg = useRef()
+
     const handleChange = (e) => {
         setFile(e.target.files[0]);
         setPreFile(URL.createObjectURL(e.target.files[0]))
+    }
 
-    };
-    const handleChangeEtiquetas = (e) => {
+    const handleChangeEtiquetas = async (e) => {
         const size = Object.keys(e).length
         if (size > 0) {
             const ultimoValor = e[size - 1].value
-            // const etiquetas = [...etiquetas];
-            etiquetas.push(ultimoValor.toLowerCase())   
+            const etiquetasUpd = [...etiquetas]
+            if (etiquetasUpd.length > size) {
+                etiquetasUpd.pop()
+            } else {
+                etiquetasUpd.push(ultimoValor.toLowerCase())
+            }
+            setEtiquetas(etiquetasUpd)
         } else {
             setEtiquetas([])
         }
-    };
+    }
+
+    useEffect(() => {
+        if (!file || loading || !etiquetas[0]) {
+            setBotonActivado(false)
+        } else {
+            setBotonActivado(true)
+        }
+    }, [etiquetas, file, loading]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
-        const formData = new FormData();
-        formData.append("file", file);      
-        formData.append("etiquetas", etiquetas);
+        const altImg = refImg.current.naturalWidth
+        const ancImg = refImg.current.naturalHeight
+        const resolucion = altImg + "x" + ancImg
+        const pesoBruto = file.size
+        let peso        
+        if (pesoBruto < 1048576) {
+            peso = ((pesoBruto / 1024).toFixed() + 'KB')
+        } else {
+            peso = ((pesoBruto / 1048576).toFixed(2) + 'MB')
+        }
 
-        await axios.post(apiUrl + "/api/images/upload", formData, {            
+        const formData = new FormData();
+        formData.append("file", file)
+        formData.append("etiquetas", etiquetas)
+        formData.append("autor", usuarioLog.nombre)
+        formData.append("resolucion", resolucion)
+        formData.append("peso", peso)
+
+        await axios.post(apiUrl + "/api/images/upload", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
             onUploadProgress: (progressEvent) => {
                 const { loaded, total } = progressEvent;
-
                 let percent = parseInt((loaded * 100) / total);
                 setUploadPercentage(percent);
             },
-        }).then(response =>{
-            console.log(response.data);          
+        }).then(response => {
+            console.log(response.data);
             setLoading(false);
             setUploadPercentage(0);
-            setEtiquetas([]);       
+            setEtiquetas([]);
             setFile(null);
             e.target.reset()
-           window.location.href = '/upload';
-           
-          }).catch(err =>{
+            window.location.href = '/upload';
+
+        }).catch(err => {
             console.log(err.response.data);
-          });        
-    };
+        });
+    }
 
     const resetImage = () => {
         setFile(null)
@@ -86,19 +124,15 @@ const ImageForm = () => {
                 <div className="card-body">
                     <h1 className="h3 card-title">Subir imagen</h1>
                     <form onSubmit={handleSubmit}>
-                        {/* Upload Input */}                        
                         <OverlayTrigger
                             placement="left"
                             overlay={<Tooltip id="tooltip-disabled">Selecciona las etiquetas que desees del desplegable. Si no encuentras la etiqueta que buscas, escríbela y pulsa Intro para registrarla.</Tooltip>}>
                             <span id="tooltip-ven" className="block">
-
                                 <CreatableSelect
                                     className="mb-3 mt-3"
                                     isMulti
                                     isClearable
                                     placeholder='Etiquetas...'
-                                    //value={selected}                               
-                                    // getOptionValue={option => option.value}                                   
                                     onChange={(e) => handleChangeEtiquetas(e)}
                                     options={options}
                                     theme={theme => ({
@@ -116,10 +150,8 @@ const ImageForm = () => {
                                         },
                                     })}
                                 />
-
                             </span>
                         </OverlayTrigger>
-
                         <div className="row">
                             <div className="col">
                                 <input
@@ -135,19 +167,15 @@ const ImageForm = () => {
                                         <div className="boton-tancar">
                                             <button type="button" className="rounded-circle btn-close light bg-danger p-2" aria-label="Close" onClick={resetImage}></button>
                                         </div>
-                                        <img style={{ width: '100%' }} alt="" src={preFile} />
-
+                                        <img ref={refImg} style={{ width: '100%' }} alt="" src={preFile} />
                                     </div>)
                                 }
-
                             </div>
-
                         </div>
-
                         <div className="my-3">
                             <button
-                                className="btn btn-primary w-100"
-                                disabled={loading || !file}
+                                className="btn btn-outline-light w-100"
+                                disabled={!botonActivado}
                             >
                                 {!loading ? (
                                     "Subir"
@@ -162,9 +190,9 @@ const ImageForm = () => {
                         </div>
                     </form>
                 </div>
-            </div>            
+            </div>
         </div>
     );
 };
 
-export default ImageForm;
+export default withRouter(ImageForm)

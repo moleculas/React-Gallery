@@ -6,10 +6,22 @@ const ImagenSchema = new Schema(
     url: {
       type: String,
       required: true,
-    },  
+    },
     etiquetas: {
       type: [String], default: []
-  }
+    },
+    autor: {
+      type: String,
+      required: true,
+    },
+    resolucion: {
+      type: String,
+      required: true,
+    },
+    peso: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,

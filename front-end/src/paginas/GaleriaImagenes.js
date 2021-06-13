@@ -1,49 +1,76 @@
-import axios from "axios"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useContext } from "react"
 import { useHistory } from "react-router-dom"
-import { apiUrl } from "../constantes"
-import Select from 'react-select';
+import Select from 'react-select'
 import options from '../opciones-select'
+import { withRouter } from "react-router-dom"
+import ContextoUsuario from '../ContextoUsuario'
 
 
-const GaleriaImagenes = () => {
-    const history = useHistory();
-    const [images, setImages] = useState([]);
-    const [estadoInicialImages, setEstadoInicialImages] = useState([]);
+const GaleriaImagenes = (props) => {
+
+    const { usuarioLog, imagenesInicio} = useContext(ContextoUsuario)
+
+    useEffect(() => {
+        if (!usuarioLog.logged) {
+            props.history.push('/login')
+        }
+    }, [usuarioLog, props.history])
+
+    const history = useHistory()
+    const [images, setImages] = useState([])
     const [tirasDe12, setTirasDe12] = useState(0)
     const [pagina, setPagina] = useState(1)
     const [paginacionVisible, setPaginacionVisible] = useState(false)
     const [slice, setSlice] = useState([])
-    const [items, setItems] = useState([])    
+    const [items, setItems] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
+    const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        (async () => {
-            const res = await axios.get(apiUrl + "/api/images")
-            setImages((res.data).reverse())
-            setEstadoInicialImages((res.data))
-        })();
-    }, []);
-
-    useEffect(() => {
-        setTirasDe12(Math.ceil(images.length / 12))
-        setTimeout(() => {
-
-            if (tirasDe12 > 1) {
-                setPaginacionVisible(true)
-
+    const imagesLoaded = () => {
+        const imgElements = [document.getElementById("galeria").querySelectorAll("img")];
+        for (let i = 0; i < imgElements.length; i += 1) {
+            const img = imgElements[i];
+            if (!img[i].complete) {
+                return false;
             } else {
-                setPaginacionVisible(false)
-
+                return true;
             }
-            for (let i = 1; i <= tirasDe12; i++) {
-                items.push(i)
-            }
-            const offSet = (pagina - 1) * 12
-            setSlice(images.slice(offSet, 12 + offSet))
-        }, 30);
+        }
+    }
 
-    }, [images, tirasDe12, items, pagina,]);
+    const handleImagenLoaded = () => {
+        setLoading(!imagesLoaded())
+    }
+
+    const handleImagenError = () => {
+        console.log('imagen error')
+    }
+
+    useEffect(() => {        
+        setImages(imagenesInicio)        
+    }, [imagenesInicio])
+
+    useEffect(() => {
+        if (usuarioLog) {
+            setTirasDe12(Math.ceil(images.length / 12))
+            setTimeout(() => {
+
+                if (tirasDe12 > 1) {
+                    setPaginacionVisible(true)
+
+                } else {
+                    setPaginacionVisible(false)
+
+                }
+                for (let i = 1; i <= tirasDe12; i++) {
+                    items.push(i)
+                }
+                const offSet = (pagina - 1) * 12
+                setSlice(images.slice(offSet, 12 + offSet))
+            }, 30);
+        }
+
+    }, [images, tirasDe12, items, pagina, usuarioLog]);
 
     const retornaEtiquetas = (imagen_etiquetas) => {
         const splitted = []
@@ -59,12 +86,42 @@ const GaleriaImagenes = () => {
         return aRetornar
     }
 
-    const handleChange = (optionSelected) => {       
+    const handleChange = (optionSelected) => {
         if (optionSelected === null) {
-            setImages(estadoInicialImages)
+            setImages(imagenesInicio)
         } else {
-            setImages(Array.from(estadoInicialImages.filter(item => item.etiquetas.find(element => element === optionSelected.value))))
+            setImages(Array.from(imagenesInicio.filter(item => item.etiquetas.find(element => element === optionSelected.value))))
         }
+        paginacion()
+    }
+
+    const handleChangeSearch = (event) => {
+        if (event.target.value === "") {
+            setImages(imagenesInicio)
+            setSearchTerm(event.target.value)
+            paginacion()
+
+        } else {
+            setSearchTerm(event.target.value)
+        }
+
+    }
+
+    const handleActualizar = () => {
+        setImages(imagenesInicio)
+        document.getElementById("search-box").value = ""
+        paginacion()
+    }
+
+    const handleSubmitSearch = (event) => {
+        event.preventDefault()
+        setImages(Array.from(imagenesInicio.filter(item => item.etiquetas.indexOf(searchTerm.toLowerCase()) > -1)))
+        setSearchTerm('')
+        document.getElementById("search-box").value = ""
+        paginacion()
+    }
+
+    const paginacion = () => {
         setPagina(1)
         setTirasDe12(Math.ceil(images.length / 12))
         setTimeout(() => {
@@ -85,56 +142,30 @@ const GaleriaImagenes = () => {
         }, 30);
     }
 
-    const handleChangeSearch = (event) => {
-        if (event.target.value === "") {
-            setImages(estadoInicialImages)
-            setSearchTerm(event.target.value)
-            setPagina(1)
-            setItems([])
-           
-        } else {
-            setSearchTerm(event.target.value)
-        }
-
-    };
-
-    const handleActualizar = () => {
-        setImages(estadoInicialImages)
-        setPagina(1)
-        setItems([])
-        setSearchTerm('')
-        document.getElementById("search-box").value = ""       
-    };
-
-    const handleSubmitSearch = (event) => {
-        event.preventDefault()
-        setImages(Array.from(estadoInicialImages.filter(item => item.etiquetas.indexOf(searchTerm.toLowerCase()) > -1)))       
-        setSearchTerm('')
-        document.getElementById("search-box").value = ""
-    };
-
-    if (estadoInicialImages.length === 0) {
+    if (imagenesInicio.length === 0 && usuarioLog) {
         return <h1 className="h4 text-center">Todavía no hay imágenes</h1>
     }
 
     return (
-
         <div className="container ">
+            {loading ? (<div className="container p-4 fondo-spinner" style={{ zIndex: 99, position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '9rem' }}>
+                <div className="spinner-border" style={{ width: '6rem', height: '6rem' }} role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>) : (<div></div>)}
             <nav className="navbar navbar-light bg-dark">
                 <div className="container-fluid p-2">
                     <div className="col s6 p-2" >
                         <Select
                             isClearable
                             placeholder='Etiquetas...'
-                            //value={selected}                               
-                            // getOptionValue={option => option.value}                                   
                             options={options}
                             onChange={handleChange}
                             theme={theme => ({
                                 ...theme,
                                 colors: {
                                     ...theme.colors,
-                                    primary25: '#0a58ca',
+                                    primary25: 'grey',
                                     prymary: '#4b4a49',
                                     neutral0: '#212529',
                                     primary: '#eeedec',
@@ -151,39 +182,39 @@ const GaleriaImagenes = () => {
                             className="d-flex"
                             onSubmit={handleSubmitSearch}
                         >
-                            <input
-                                id="search-box"
-                                className="form-control bg-dark text-light me-2"
-                                type="search"
-                                placeholder="Buscar"
-                                aria-label="Search"
-                                onChange={handleChangeSearch}
-                            />
-                            <button className="nav-link active d-flex align-items-center text-light btn-primary btn me-2" type="submit"><span className="material-icons">search</span>Buscar</button>
-                            <button
-                                className="nav-link active d-flex align-items-center text-light btn-primary btn"
-                                type="button"
-                                onClick={handleActualizar}
-                            >
-                                <span className="material-icons">refresh</span>Actualizar
+                            <div className="input-group me-2" role="group" aria-label="Basic example">
+                                <input
+                                    id="search-box"
+                                    className="form-control bg-dark text-light"
+                                    type="search"
+                                    placeholder="Buscar"
+                                    aria-label="Search"
+                                    onChange={handleChangeSearch}
+                                />
+                                <button className="d-flex align-items-center btn-outline-light btn" type="submit"><span className="material-icons">search</span>Buscar</button>
+                                <button
+                                    className="d-flex align-items-center btn-outline-light btn"
+                                    type="button"
+                                    onClick={handleActualizar}
+                                >
+                                    <span className="material-icons">refresh</span>Actualizar
                             </button>
+                            </div>
                         </form>
                     </div>
                 </div>
             </nav>
-            {images.length===0 ? (
+            {images.length === 0 ? (
                 <div className="alert alert-primary mt-4 d-flex" role="alert">
                     <span className="material-icons me-2">info</span>
                 La búsqueda no ha devuelto resultados.
                 </div>
             ) : (<div></div>)}
-
-            <div className="row mt-3 p-2">
+            <div className="row mt-3 p-2" id="galeria">
                 {slice.map((image) => (
                     <div
                         className="col-md-4 p-1"
                         key={image._id}
-
                     >
                         <div className="card bg-dark h-100 card-image">
                             <div className="card-body">
@@ -192,11 +223,16 @@ const GaleriaImagenes = () => {
                                     alt=""
                                     className="img-fluid h-100 w-100 cursor-pointer"
                                     style={{ objectFit: "cover" }}
-                                    onClick={() => history.push(`/images/${image._id}`)}
+                                    onClick={() => history.push({
+                                        pathname: `/images/${image._id}`
+                                    })}
+                                    onLoad={handleImagenLoaded}
+                                    onError={handleImagenError}
                                 />
                             </div>
                             <div className="card-footer text-muted">
                                 <div dangerouslySetInnerHTML={{ __html: retornaEtiquetas(image.etiquetas) }} />
+                                <div className="p-1"><small>Res: {image.resolucion} Peso: {image.peso} - Por: {image.autor}</small></div>
                             </div>
                         </div>
                     </div>
@@ -204,35 +240,22 @@ const GaleriaImagenes = () => {
             </div>
             {
                 paginacionVisible ? (<nav className="mt-3 bg-black">
-                    <ul className="pagination justify-content-center">
-                        {/* <li className="page-item disabled ">
-                        <a className="page-link bg-transparent text-secondary border border-light" href="#" aria-label="Previous" aria-disabled="true">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li> */}
-                        {items.map((item, index) => (
-                            item === pagina ? (
-                                <li key={index} className="page-link bg-primary disabled border border-dark">
-                                    <a className="text-decoration-none text-light cursor-default" href="#" aria-disabled="true">
-                                        <span aria-hidden="true">{item}</span>
-                                    </a>
-                                </li>
-                            ) : (
-                                <li key={index} className="page-link bg-transparent border border-dark">
-                                    <a className="text-decoration-none text-light" onClick={() => (setPagina(item), setItems([]))} href="#">{item}</a>
-                                </li>)
-                        ))}
-                        {/* <li className="page-item disabled">
-                        <a className="page-link bg-transparent text-secondary border border-light" href="#" aria-label="Next" aria-disabled="true">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li> */}
-                    </ul>
-                </nav>) : (<div></div>)
+                    <div className="pagination justify-content-center">
+                        <div className="btn-toolbar" role="toolbar" aria-label="paginacion">
+                            <div className="btn-group me-2" role="group" >
+                                {items.map((item, index) => (
+                                    item === pagina ? (
+                                        <button key={index} type="button" className="btn btn-dark" disabled>{item}</button>
+                                    ) : (
+                                        <button key={index} onClick={() => { setPagina(item); setItems([]) }} type="button" className="btn btn-dark">{item}</button>
+                                    )))}
+                            </div>
+                        </div>
+                    </div>
+                </nav>) : null
             }
-
         </div>
     )
 }
 
-export default GaleriaImagenes
+export default withRouter(GaleriaImagenes)

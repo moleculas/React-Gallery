@@ -14,6 +14,9 @@ exports.upload =async (req, res) => {
         url: urlImage,
         key: imagenPass,       
         etiquetas: etiquetasArray,
+        autor: req.body.autor,
+        resolucion: req.body.resolucion,
+        peso: req.body.peso
     });
     await guardaImagen.save();
     return res.json(guardaImagen);

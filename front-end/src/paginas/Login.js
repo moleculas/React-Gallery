@@ -1,9 +1,18 @@
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback, useContext } from "react"
 import axios from "axios"
 import { apiUrl } from "../constantes"
 import { withRouter } from "react-router-dom";
+import ContextoUsuario from '../ContextoUsuario';
 
 const Login = (props) => {
+
+    const {usuarioLog, setUsuarioLog} = useContext(ContextoUsuario);
+
+    useEffect(() => {
+        if (usuarioLog.logged) {
+            props.history.push('/')
+        }
+    }, [usuarioLog, props.history])
 
     const [email, setEmail] = useState('')
     const [nombre, setNombre] = useState('')
@@ -72,16 +81,22 @@ const Login = (props) => {
             headers: {
                 "Content-Type": "multipart/form-data",
             }
-        }).then(response => {
-           console.log(response.data.accessToken)
-            props.history.push('/')
-            return
+        }).then(response => {                  
+            localStorage.setItem("token", JSON.stringify(response.data.accessToken))
+            localStorage.setItem("nombre", JSON.stringify(response.data.nombre))
+            setUsuarioLog(prevState => ({
+                ...prevState,
+                nombre: response.data.nombre,
+                logged: true
+            }))
+           props.history.push('/')          
+           return
 
         }).catch(err => {
             setError(err.response.data.message)
             return
         })
-    }, [password, nombre, props.history])
+    }, [password, nombre, props.history, setUsuarioLog])
 
     const registrar = useCallback(async (e) => {
         const formData = new FormData();
@@ -96,7 +111,7 @@ const Login = (props) => {
             setEmail('');
             setNombre('');
             setPassword('')
-            e.target.reset()
+            e.target.reset()            
             setExito('Usuario registrado')
             setEsRegistro(!esRegistro)
             return
@@ -155,13 +170,13 @@ const Login = (props) => {
 
                         <div className="my-3 d-flex">
                             <button
-                                className="nav-link active d-flex align-items-center btn-primary text-light btn col-6 me-2"
+                                className="d-flex align-items-center btn-outline-light btn col-6 me-2"
                                 type="submit"
                             >
                                 {esRegistro ? 'Registrar' : 'Acceder'}
                             </button>
                             <button
-                                className="nav-link active d-flex align-items-center btn-info btn col-6"
+                                className="d-flex align-items-center btn-outline-info btn col-6"
                                 type="button"
                                 onClick={handleEsRegistro}
                             >
