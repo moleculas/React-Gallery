@@ -3,6 +3,6 @@ MERN Stack con CRUD React para la gestión de imágenes desplegado en servidor U
 
 # Instalación
 
-# Notas
+## Notas
 
-Crear carpeta files en /opt/react-gallery/front-end/public
+Crear carpeta `files` en /opt/react-gallery/front-end/public
