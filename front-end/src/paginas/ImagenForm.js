@@ -143,7 +143,7 @@ const ImageForm = (props) => {
                                             prymary: '#4b4a49',
                                             neutral0: '#212529',
                                             primary: '#eeedec',
-                                            neutral80: 'black',
+                                            neutral80: 'grey',
                                             primary50: '#4b4a49',
                                             neutral60: '#ffffff',
                                             neutral40: '#ffffff',
