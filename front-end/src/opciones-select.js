@@ -1,5 +1,5 @@
 import axios from "axios"
-import { apiUrl } from "./constantes"
+import { apiUrl } from "./constantes-f"
 
 const queryImagenesOptions = () => {
     let imagenes = []    

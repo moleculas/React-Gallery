@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react"
 import { useParams } from "react-router-dom"
 import axios from "axios"
-import { apiUrl } from "../constantes"
+import { apiUrl } from "../constantes-f"
 import { Link } from "react-router-dom"
 import { withRouter } from "react-router-dom"
 import { useHistory } from "react-router-dom"

@@ -10,7 +10,7 @@ import './App.css'
 import Navbar from "./componentes/Navbar";
 import ContextoUsuario from './ContextoUsuario'
 import axios from "axios"
-import { apiUrl } from "./constantes"
+import { apiUrl } from "./constantes-f"
 
 function App() {
 

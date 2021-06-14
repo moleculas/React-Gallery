@@ -3,7 +3,7 @@ import axios from "axios"
 import options from '../opciones-select'
 import CreatableSelect from 'react-select/creatable'
 import { OverlayTrigger, Tooltip } from 'react-bootstrap'
-import { apiUrl } from "../constantes"
+import { apiUrl } from "../constantes-f"
 import { withRouter } from "react-router-dom"
 import ContextoUsuario from '../ContextoUsuario'
 

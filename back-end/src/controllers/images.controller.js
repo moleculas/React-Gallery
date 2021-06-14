@@ -1,11 +1,11 @@
 const Imagen = require('../models/Imagen');
 const fs = require('fs');
+const rutaFiles= require('../constantes-b.js')
 
 exports.upload =async (req, res) => {
     const { file } = req.files;
-    const imagenPass=res.locals.nombreImagen
-    await file.mv(`../front-end/public/files/${imagenPass}`)
-    const serverUrl = req.protocol + '://' + req.get('host');
+    const imagenPass=res.locals.nombreImagen  
+    await file.mv(rutaFiles+imagenPass)    
     const urlImage = `/files/${imagenPass}`;   
     let etiquetasRec = req.body.etiquetas; 
     let etiquetasArray=etiquetasRec.split(",")
@@ -34,7 +34,7 @@ exports.getImage =async (req, res) => {
 
 exports.delete =async (req, res) => {
     const borraImagen = await Imagen.findByIdAndDelete(req.params.id);
-    fs.unlink(`../front-end/public/files/${borraImagen.key}`, (err) => {
+    fs.unlink(rutaFiles+borraImagen.key, (err) => {
         if (err) console.log(error);
         console.log('imagen borrada');
     });
