@@ -9,7 +9,7 @@ git clone https://github.com/moleculas/react-gallery.git
 ```
 -Otorgar permisos al directorio:
 ```
-sudo chown -R (*nombre usuario) /opt/
+sudo chown -R *nombre usuario /opt/
 ```
 -Instalar dependencias en front-end:
 ```
@@ -37,7 +37,7 @@ npm run build
 ```
 cd /opt/react-gallery/front-end/build
 mkdir files
-sudo chown -R (*nombre usuario) /opt/react-gallery/front-end/build/files
+sudo chown -R *nombre usuario /opt/react-gallery/front-end/build/files
 ```
 -Instalar dependencias en back-end:
 ```
@@ -80,6 +80,10 @@ server {
   location /api/ {
     proxy_pass http://localhost:4000/;
   }
+
+  # tamaño máximo de archivos a subir 10M #
+  client_max_body_size 10M;
+
 }
 ```
 -Reiniciar servidor: 
@@ -90,8 +94,8 @@ sudo systemctl restart nginx
 ```
 sudo systemctl start mongod.service
 ```
--Arrancar el servidor node con pm2: 
+-Arrancar el servidor node y dejarlo ejecutándose en segundo plano: 
 ```
 cd /opt/react-gallery/back-end/src
-pm2 start index.js
+npm run dev &
 ```
