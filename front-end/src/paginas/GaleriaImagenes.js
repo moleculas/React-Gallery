@@ -59,10 +59,8 @@ const GaleriaImagenes = (props) => {
             } else {
                 setPaginacionVisible(false)
             }
-
             const offSet = (pagina - 1) * 12
             setSlice(images.slice(offSet, 12 + offSet))
-
         }
     }, [images, pagina, usuarioLog, items]);
    

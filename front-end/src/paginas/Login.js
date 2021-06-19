@@ -9,10 +9,10 @@ const Login = (props) => {
     const {usuarioLog, setUsuarioLog} = useContext(ContextoUsuario);
 
     useEffect(() => {
-        if (usuarioLog.logged) {
-            props.history.push('/')
+        if (usuarioLog.logged) {          
+           window.location.href = '/'     
         }
-    }, [usuarioLog, props.history])
+    }, [usuarioLog])
 
     const [email, setEmail] = useState('')
     const [nombre, setNombre] = useState('')
@@ -89,7 +89,6 @@ const Login = (props) => {
                 nombre: response.data.nombre,
                 logged: true
             }))
-           props.history.push('/')          
            return
 
         }).catch(err => {
