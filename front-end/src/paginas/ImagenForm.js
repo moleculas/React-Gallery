@@ -10,7 +10,7 @@ import ContextoUsuario from '../ContextoUsuario'
 const ImageForm = (props) => {
 
     const { usuarioLog } = useContext(ContextoUsuario)
-
+   
     useEffect(() => {
         if (!usuarioLog.logged) {
             props.history.push('/login')
@@ -23,8 +23,24 @@ const ImageForm = (props) => {
     const [loading, setLoading] = useState(false)
     const [preFile, setPreFile] = useState(null)
     const [botonActivado, setBotonActivado] = useState(false)
+    const [error, setError] = useState(null)
+    const [exito, setExito] = useState(null)
+    const [contenidoAlerts, setContenidoAlerts] = useState(null)
 
     const refImg = useRef()
+
+    useEffect(() => {
+        if (error) {
+            const contenidoEr = `<div class="alert mt-3 alert-danger">${error}</div>`
+            setContenidoAlerts(contenidoEr)
+            setError(null)
+        }
+        if (exito) {
+            const contenidoEx = `<div class="alert mt-3 alert-info">${exito}</div>`
+            setContenidoAlerts(contenidoEx)
+            setExito(null)
+        }
+    }, [exito, error]);
 
     const handleChange = (e) => {
         setFile(e.target.files[0]);
@@ -57,19 +73,21 @@ const ImageForm = (props) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-
         const altImg = refImg.current.naturalWidth
         const ancImg = refImg.current.naturalHeight
         const resolucion = altImg + "x" + ancImg
         const pesoBruto = file.size
-        let peso        
+        let peso
         if (pesoBruto < 1048576) {
             peso = ((pesoBruto / 1024).toFixed() + 'KB')
         } else {
             peso = ((pesoBruto / 1048576).toFixed(2) + 'MB')
         }
-
+        if (pesoBruto >= 10485760) {
+            setError('El archivo pesa más de 10 MB. No aceptado.')
+            return
+        }
+        setLoading(true);
         const formData = new FormData();
         formData.append("file", file)
         formData.append("etiquetas", etiquetas)
@@ -93,8 +111,7 @@ const ImageForm = (props) => {
             setEtiquetas([]);
             setFile(null);
             e.target.reset()
-            window.location.href = '/upload';
-
+            window.location.href = '/upload'
         }).catch(err => {
             console.log(err.response.data);
         });
@@ -116,14 +133,14 @@ const ImageForm = (props) => {
                         style={{ width: `${uploadPercentage}%` }}
                     >
                         {uploadPercentage}%
-          </div>
+                    </div>
                 </div>
             )}
-
             <div className="card bg-dark text-light rounded-0 p-4">
                 <div className="card-body">
                     <h1 className="h3 card-title">Subir imagen</h1>
                     <form onSubmit={handleSubmit}>
+                        <div dangerouslySetInnerHTML={{ __html: contenidoAlerts }} />
                         <OverlayTrigger
                             placement="left"
                             overlay={<Tooltip id="tooltip-disabled">Selecciona las etiquetas que desees del desplegable. Si no encuentras la etiqueta que buscas, escríbela y pulsa Intro para registrarla.</Tooltip>}>

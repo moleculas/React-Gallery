@@ -5,10 +5,9 @@ import options from '../opciones-select'
 import { withRouter } from "react-router-dom"
 import ContextoUsuario from '../ContextoUsuario'
 
-
 const GaleriaImagenes = (props) => {
 
-    const { usuarioLog, imagenesInicio} = useContext(ContextoUsuario)
+    const { usuarioLog, imagenesInicio } = useContext(ContextoUsuario)
 
     useEffect(() => {
         if (!usuarioLog.logged) {
@@ -18,7 +17,6 @@ const GaleriaImagenes = (props) => {
 
     const history = useHistory()
     const [images, setImages] = useState([])
-    const [tirasDe12, setTirasDe12] = useState(0)
     const [pagina, setPagina] = useState(1)
     const [paginacionVisible, setPaginacionVisible] = useState(false)
     const [slice, setSlice] = useState([])
@@ -46,32 +44,28 @@ const GaleriaImagenes = (props) => {
         console.log('imagen error')
     }
 
-    useEffect(() => {        
-        setImages(imagenesInicio)        
+    useEffect(() => {
+        setImages(imagenesInicio)
     }, [imagenesInicio])
 
     useEffect(() => {
         if (usuarioLog) {
-            setTirasDe12(Math.ceil(images.length / 12))
-            setTimeout(() => {
-
-                if (tirasDe12 > 1) {
-                    setPaginacionVisible(true)
-
-                } else {
-                    setPaginacionVisible(false)
-
-                }
+            const tirasDe12 = Math.ceil(images.length / 12)
+            if (tirasDe12 > 1) {
+                setPaginacionVisible(true)
                 for (let i = 1; i <= tirasDe12; i++) {
                     items.push(i)
                 }
-                const offSet = (pagina - 1) * 12
-                setSlice(images.slice(offSet, 12 + offSet))
-            }, 30);
+            } else {
+                setPaginacionVisible(false)
+            }
+
+            const offSet = (pagina - 1) * 12
+            setSlice(images.slice(offSet, 12 + offSet))
+
         }
-
-    }, [images, tirasDe12, items, pagina, usuarioLog]);
-
+    }, [images, pagina, usuarioLog, items]);
+   
     const retornaEtiquetas = (imagen_etiquetas) => {
         const splitted = []
         let aRetornar = ""
@@ -87,59 +81,40 @@ const GaleriaImagenes = (props) => {
     }
 
     const handleChange = (optionSelected) => {
+        setItems([])
+        setPagina(1)
         if (optionSelected === null) {
             setImages(imagenesInicio)
         } else {
             setImages(Array.from(imagenesInicio.filter(item => item.etiquetas.find(element => element === optionSelected.value))))
         }
-        paginacion()
     }
 
     const handleChangeSearch = (event) => {
         if (event.target.value === "") {
+            setItems([])
+            setPagina(1)
             setImages(imagenesInicio)
             setSearchTerm(event.target.value)
-            paginacion()
-
         } else {
             setSearchTerm(event.target.value)
         }
-
     }
 
     const handleActualizar = () => {
+        setItems([])
+        setPagina(1)
         setImages(imagenesInicio)
         document.getElementById("search-box").value = ""
-        paginacion()
     }
 
     const handleSubmitSearch = (event) => {
+        setItems([])
+        setPagina(1)
         event.preventDefault()
         setImages(Array.from(imagenesInicio.filter(item => item.etiquetas.indexOf(searchTerm.toLowerCase()) > -1)))
         setSearchTerm('')
-        document.getElementById("search-box").value = ""
-        paginacion()
-    }
-
-    const paginacion = () => {
-        setPagina(1)
-        setTirasDe12(Math.ceil(images.length / 12))
-        setTimeout(() => {
-            if (tirasDe12 > 1) {
-                setPaginacionVisible(true)
-                for (let i = 1; i <= tirasDe12; i++) {
-                    items.push(i)
-                }
-                const offSet = (pagina - 1) * 12
-                setSlice(images.slice(offSet, 12 + offSet))
-                setItems([])
-
-            } else {
-                setPaginacionVisible(false)
-                setItems([])
-            }
-
-        }, 30);
+        document.getElementById("search-box").value = ""       
     }
 
     if (imagenesInicio.length === 0 && usuarioLog) {
@@ -169,7 +144,7 @@ const GaleriaImagenes = (props) => {
                                     prymary: '#4b4a49',
                                     neutral0: '#212529',
                                     primary: '#eeedec',
-                                    neutral80: 'black',
+                                    neutral80: 'grey',
                                     primary50: '#4b4a49',
                                     neutral60: '#ffffff',
                                     neutral40: '#ffffff',
@@ -198,7 +173,7 @@ const GaleriaImagenes = (props) => {
                                     onClick={handleActualizar}
                                 >
                                     <span className="material-icons">refresh</span>Actualizar
-                            </button>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -207,7 +182,7 @@ const GaleriaImagenes = (props) => {
             {images.length === 0 ? (
                 <div className="alert alert-primary mt-4 d-flex" role="alert">
                     <span className="material-icons me-2">info</span>
-                La búsqueda no ha devuelto resultados.
+                    La búsqueda no ha devuelto resultados.
                 </div>
             ) : (<div></div>)}
             <div className="row mt-3 p-2" id="galeria">

@@ -134,7 +134,6 @@ const Login = (props) => {
                     </h1>
                     <form onSubmit={procesarDatos}>
                         <div dangerouslySetInnerHTML={{ __html: contenidoAlerts }} />
-
                         <div className="row mt-3">
                             <div className="col-12 mb-2">
                                 <input

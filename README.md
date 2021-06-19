@@ -1,6 +1,10 @@
 # react-gallery
 MERN Stack con CRUD React para la gestión de imágenes desplegado en servidor UBUNTU 20.04
 
+## Demo
+
+[Demo instalada en Instancia Ubuntu en AWS](http://ec2-35-180-128-197.eu-west-3.compute.amazonaws.com/)
+
 ## Instalación en servidor
 
 -Clonar repositorio en directorio /opt 
@@ -32,12 +36,6 @@ export const apiUrl="/api";
 -Compilar aplicación:
 ```
 npm run build
-```
--Crear carpeta `files` en /opt/react-gallery/front-end/build y otorgar permisos:
-```
-cd /opt/react-gallery/front-end/build
-mkdir files
-sudo chown -R *nombre usuario /opt/react-gallery/front-end/build/files
 ```
 -Instalar dependencias en back-end:
 ```
