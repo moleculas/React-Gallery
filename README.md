@@ -5,6 +5,9 @@ MERN Stack con CRUD React para la gestión de imágenes desplegado en servidor U
 
 [Demo instalada en Instancia Ubuntu en AWS](http://ec2-35-180-128-197.eu-west-3.compute.amazonaws.com/)
 
+Usuario: tester
+Pass: 123456
+
 ## Instalación en servidor
 
 -Clonar repositorio en directorio /opt 
